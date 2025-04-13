@@ -24,26 +24,43 @@ export const DashboardForm = ({
     const fetchUsers = async () => {
       onLoadingChange(true);
       onError('');
-      
+
       try {
-        const response = await fetch(`/api/users?search=${encodeURIComponent(searchTerm)}`, {
+        const terms = searchTerm.trim().toLowerCase().split(/\s+/);
+        const response = await fetch(`/api/users?search=${encodeURIComponent(terms[0])}`, {
           headers: {
             'Authorization': `Bearer ${accessToken}`,
             'Content-Type': 'application/json'
           }
         });
-    
+
         if (!response.ok) {
           throw new Error(`HTTP ${response.status}`);
         }
-    
+
         const result = await response.json();
-    
+
         if (!result.result?.data?.users) {
           throw new Error('Response missing result.data.users');
         }
-    
-        onUsersLoaded(result.result.data.users);
+
+        let filteredUsers = result.result.data.users;
+
+        if (searchTerm.trim()) {
+          const term = searchTerm.toLowerCase();
+
+          filteredUsers = filteredUsers.filter((user: User) => {
+            const fullName = `${user.firstName} ${user.lastName || ''}`.toLowerCase();
+            const email = user.email?.toLowerCase() || '';
+
+            return (
+              fullName.includes(term) ||
+              email.includes(term)
+            );
+          });
+        }
+
+        onUsersLoaded(filteredUsers);
       } catch (err) {
         onError(err instanceof Error ? err.message : 'Failed to load users');
         onUsersLoaded([]);
@@ -53,7 +70,7 @@ export const DashboardForm = ({
     };
 
     fetchUsers();
-    
+
     return () => controller.abort();
   }, [searchTerm, accessToken]);
 
