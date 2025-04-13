@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useAuthStore } from '../../store/authStore';
 import { User } from '../../types/user';
 
@@ -17,21 +17,73 @@ export const DashboardForm = ({
 }: DashboardFormProps) => {
   const [searchTerm, setSearchTerm] = useState('');
   const { accessToken } = useAuthStore();
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+
     const controller = new AbortController();
-    
+    abortControllerRef.current = controller;
+
     const fetchUsers = async () => {
       onLoadingChange(true);
       onError('');
 
       try {
-        const terms = searchTerm.trim().toLowerCase().split(/\s+/);
-        const response = await fetch(`/api/users?search=${encodeURIComponent(terms[0])}`, {
+        const searchQuery = searchTerm.trim();
+        let url = '/api/users';
+        
+        if (searchQuery) {
+          const searchParts = searchQuery.split(/\s+/).filter(Boolean);
+          
+          if (searchParts.length > 1) {
+            const userPromises = searchParts.map(part => 
+              fetch(`/api/users?search=${encodeURIComponent(part)}`, {
+                headers: {
+                  'Authorization': `Bearer ${accessToken}`,
+                  'Content-Type': 'application/json'
+                },
+                signal: controller.signal
+              })
+            );
+
+            const responses = await Promise.all(userPromises);
+            const results = await Promise.all(responses.map(r => r.json()));
+            
+            // Combine all users from all responses
+            let allUsers: User[] = [];
+            results.forEach(result => {
+              const users = result.result?.data?.users || [];
+              allUsers = [...allUsers, ...users];
+            });
+
+            // Remove duplicates and filter for users that match all search parts
+            const uniqueUsers = Array.from(new Map(allUsers.map(user => [user.id, user])).values());
+            
+            const filteredUsers = uniqueUsers.filter((user: User) => {
+              const fullName = `${user.firstName} ${user.lastName || ''}`.toLowerCase();
+              const email = user.email?.toLowerCase() || '';
+              return searchParts.every(part => 
+                fullName.includes(part.toLowerCase()) || 
+                email.includes(part.toLowerCase())
+              );
+            });
+
+            onUsersLoaded(filteredUsers);
+            return;
+          } else {
+            url = `/api/users?search=${encodeURIComponent(searchQuery)}`;
+          }
+        }
+
+        const response = await fetch(url, {
           headers: {
             'Authorization': `Bearer ${accessToken}`,
             'Content-Type': 'application/json'
-          }
+          },
+          signal: controller.signal
         });
 
         if (!response.ok) {
@@ -39,40 +91,25 @@ export const DashboardForm = ({
         }
 
         const result = await response.json();
-
-        if (!result.result?.data?.users) {
-          throw new Error('Response missing result.data.users');
-        }
-
-        let filteredUsers = result.result.data.users;
-
-        if (searchTerm.trim()) {
-          const term = searchTerm.toLowerCase();
-
-          filteredUsers = filteredUsers.filter((user: User) => {
-            const fullName = `${user.firstName} ${user.lastName || ''}`.toLowerCase();
-            const email = user.email?.toLowerCase() || '';
-
-            return (
-              fullName.includes(term) ||
-              email.includes(term)
-            );
-          });
-        }
-
-        onUsersLoaded(filteredUsers);
+        const users = result.result?.data?.users || [];
+        onUsersLoaded(users);
       } catch (err) {
-        onError(err instanceof Error ? err.message : 'Failed to load users');
-        onUsersLoaded([]);
+        if (err instanceof Error && err.name !== 'AbortError') {
+          onError(err instanceof Error ? err.message : 'Failed to load users');
+          onUsersLoaded([]);
+        }
       } finally {
         onLoadingChange(false);
       }
     };
 
-    fetchUsers();
-
-    return () => controller.abort();
-  }, [searchTerm, accessToken]);
+    const timer = setTimeout(fetchUsers, 300);
+    
+    return () => {
+      clearTimeout(timer);
+      controller.abort();
+    };
+  }, [searchTerm, accessToken, onError, onLoadingChange, onUsersLoaded]);
 
   return (
     <div className="p-4 sm:p-6">
@@ -83,8 +120,8 @@ export const DashboardForm = ({
         onChange={(e) => setSearchTerm(e.target.value)}
         className={`w-full sm:w-1/2 md:w-1/3 p-2 border rounded-md transition ${
           isDarkMode
-            ? 'bg-[var(--color-gray-700)] text-[var(--color-white)] placeholder-[var(--color-gray-300)] border-[var(--color-gray-600)] focus:ring-2 focus:ring-[var(--color-blue-500)]'
-            : 'bg-[var(--color-white)] text-[var(--color-gray-800)] placeholder-[var(--color-gray-500)] border-[var(--color-gray-300)] focus:ring-2 focus:ring-[var(--color-blue-500)]'
+            ? 'bg-gray-700 text-white placeholder-gray-300 border-gray-600 focus:ring-2 focus:ring-blue-500'
+            : 'bg-white text-gray-800 placeholder-gray-500 border-gray-300 focus:ring-2 focus:ring-blue-500'
         }`}
       />
     </div>
