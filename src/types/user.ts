@@ -1,9 +1,8 @@
 export interface User {
-    id: number;
-    name: string;
-    email: string;
-    status: 'active' | 'locked';
-    dob: string;
-  }
-  
-  export type UserStatus = User['status'];
+  id: string;
+  firstName: string;
+  lastName?: string; 
+  email: string;
+  status: 'ACTIVE' | 'LOCKED';
+  dateOfBirth: string; 
+}
