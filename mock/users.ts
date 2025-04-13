@@ -8,7 +8,7 @@ const mock: MockMethod[] = [
   {
     url: '/api/users',
     method: 'get',
-    timeout: 500,
+    timeout: 2000,
     response: ({ query, headers }: { query: { search?: string }; headers: ApiHeaders }) => {
       if (validateToken(headers.authorization)) {
         let users = [...usersData.users];
