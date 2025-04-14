@@ -31,7 +31,7 @@ const LoginPage = () => {
   
       const response = await axios.post('/api/login', {
         email,
-        password, // ✅ fixed payload shape
+        password,
       });
   
       if (response.data.status === 200) {
