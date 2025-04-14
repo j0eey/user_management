@@ -28,9 +28,10 @@ const LoginPage = () => {
   
     try {
       setLoading(true);
-      // Note the nested body structure to match the mock server expectation
+  
       const response = await axios.post('/api/login', {
-        body: { email, password }  // This matches the mock server's expected format
+        email,
+        password, // ✅ fixed payload shape
       });
   
       if (response.data.status === 200) {
@@ -46,6 +47,7 @@ const LoginPage = () => {
       setLoading(false);
     }
   };
+  
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-[var(--color-gray-50)] px-4">
