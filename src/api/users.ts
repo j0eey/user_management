@@ -2,7 +2,7 @@ import { User } from '../types/user';
 
 /**
  * Fetch users from the API with optional search support.
- * @param searchTerm - Optional search query.
+ * @param searchTerm - Optional search query (first name, last name, or email).
  * @param accessToken - Auth token for the request.
  * @returns List of users from the API.
  */
@@ -10,26 +10,15 @@ export const getUsers = async (
   searchTerm: string = '',
   accessToken: string | null
 ): Promise<User[]> => {
-  // Use URLSearchParams to build the query string more effectively
-  const params = new URLSearchParams();
-  
-  if (searchTerm) {
-    const [firstName, lastName] = searchTerm.split(' ').map(term => term.trim());
+  const url = new URL('/api/users', window.location.origin);
 
-    // We combine both firstName and lastName into a single search parameter
-    if (firstName) params.append('firstName', firstName);
-    if (lastName) params.append('lastName', lastName);
+  if (searchTerm.trim()) {
+    url.searchParams.append('search', searchTerm.trim());
   }
 
-  // Set up the URL and append search params
-  const url = new URL('/api/users', window.location.origin);
-  url.search = params.toString(); // Append parameters to the URL
-  
-  // Optional: Add pagination parameters (if the API supports it)
-  const page = 1;  // Or determine this from the UI
-  const itemsPerPage = 20;  // Set a reasonable number of items per page
-  url.searchParams.append('page', page.toString());
-  url.searchParams.append('itemsPerPage', itemsPerPage.toString());
+  // Optional: Pagination (set manually or dynamically from UI)
+  url.searchParams.append('page', '1');
+  url.searchParams.append('itemsPerPage', '20');
 
   try {
     const response = await fetch(url.toString(), {
@@ -46,7 +35,7 @@ export const getUsers = async (
 
     const result = await response.json();
 
-    // Handle both possible response shapes (mock and real)
+    // Support both possible response shapes
     return result.result?.data?.users || result.data?.users || [];
   } catch (error) {
     console.error('Error fetching users:', error);
