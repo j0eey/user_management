@@ -8,7 +8,6 @@ const LoginPage = () => {
   const navigate = useNavigate();
   const { accessToken, setAuth } = useAuthStore();
 
-
   useEffect(() => {
     if (accessToken) {
       navigate('/dashboard', { replace: true });
@@ -20,34 +19,34 @@ const LoginPage = () => {
 
   const handleLogin = async (email: string, password: string) => {
     setError('');
-  
+
     if (!email || !password) {
-      setError('Please fill in all fields');
+      setError('Please fill in all fields');  
       return;
     }
-  
+
     try {
       setLoading(true);
-  
-      const response = await axios.post('/api/login', {
-        email,
-        password,
-      });
-  
-      if (response.data.status === 200) {
-        const { accessToken, expiresIn } = response.data.result.data;
+
+      const response = await axios.post('/api/login', { email, password });
+
+      const { status, result } = response.data;
+      const { data, message } = result;
+
+      if (status === 200 && data?.accessToken) {
+        const { accessToken, expiresIn } = data;
         setAuth({ accessToken, expiresIn });
         navigate('/dashboard');
       } else {
-        setError(response.data.result.message || 'Something went wrong');
+        setError(data?.message || message || '');
       }
     } catch (err: any) {
-      setError(err.response?.data?.result?.message || 'Something went wrong!');
+      const fallbackMessage = err.response?.data?.result?.data?.message || err.response?.data?.result?.message || 'Something went wrong!';
+      setError(fallbackMessage);
     } finally {
       setLoading(false);
     }
   };
-  
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-[var(--color-gray-50)] px-4">
