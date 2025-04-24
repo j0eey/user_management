@@ -9,7 +9,6 @@ export default function NewUserPage() {
   const navigate = useNavigate();
   const { mutate, isPending } = useCreateUser();
   
-  // State for managing modal visibility and message
   const [modalVisible, setModalVisible] = useState(false);
   const [modalMessage, setModalMessage] = useState('');
   const [isError, setIsError] = useState(false);
