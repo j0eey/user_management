@@ -34,7 +34,7 @@ export const DashboardPage = () => {
     staleTime: 5 * 60 * 1000,
   });
 
-  // Enhanced full name matching logic
+
   const filteredUsers = allUsers.filter((user) => {
     const fullName = `${user.firstName} ${user.lastName ?? ''}`.toLowerCase();
     const email = user.email.toLowerCase(); // Include email in search

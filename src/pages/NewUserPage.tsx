@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { MinimalNavbar } from '../components/MinimalNavbar';
 import { NewUserForm } from '../components/auth/NewUserForm';
-import useCreateUser from '../hooks/useCreateUser'; // Default import
+import useCreateUser from '../hooks/useCreateUser';
 import { useState } from 'react';
 import { Modal } from '../components/ui/Modal';
 
