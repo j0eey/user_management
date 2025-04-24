@@ -16,20 +16,15 @@ export const useAuthStore = create<AuthState>()(
       accessToken: null,
       expiresAt: null,
       expiresIn: null,
-
       setAuth: ({ accessToken, expiresIn }) => {
         const expiresAt = Date.now() + expiresIn * 1000;
         set({ accessToken, expiresAt, expiresIn });
       },
-
-      logout: () => {
-        set({ accessToken: null, expiresAt: null, expiresIn: null });
-      },
-
+      logout: () => set({ accessToken: null, expiresAt: null, expiresIn: null }),
       isAuthenticated: () => {
         const { accessToken, expiresAt } = get();
-        return Boolean(accessToken) && (expiresAt ?? 0) > Date.now();
-      },
+        return !!accessToken && (expiresAt ?? 0) > Date.now();
+      }
     }),
     {
       name: 'auth-storage',

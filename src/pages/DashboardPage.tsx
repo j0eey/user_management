@@ -13,13 +13,13 @@ export const DashboardPage = () => {
   const { isDarkMode } = useOutletContext<{ isDarkMode: boolean }>();
   const { accessToken } = useAuthStore();
 
-  // Debounce search term (500ms delay)
+  
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedSearchTerm(searchTerm);
-    }, 500); // Delay to make the API call after 500ms of typing
+    }, 500); 
 
-    return () => clearTimeout(timer); // Clear timeout on each change
+    return () => clearTimeout(timer); 
   }, [searchTerm]);
 
   const {
@@ -28,7 +28,7 @@ export const DashboardPage = () => {
     isError,
     error,
   } = useQuery({
-    queryKey: ['users', debouncedSearchTerm], // Use debounced search term
+    queryKey: ['users', debouncedSearchTerm], 
     queryFn: () => getUsers(debouncedSearchTerm, accessToken),
     enabled: !!accessToken,
     staleTime: 5 * 60 * 1000,

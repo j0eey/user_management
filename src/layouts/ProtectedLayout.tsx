@@ -1,4 +1,4 @@
-import { Outlet, Navigate } from 'react-router-dom';
+import { Outlet, Navigate, useLocation } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import { useAuthStore } from '../store/authStore';
 import { useThemeStore } from '../store/themeStore';
@@ -7,6 +7,7 @@ import { useEffect } from 'react';
 const ProtectedLayout = () => {
   const { accessToken, isAuthenticated } = useAuthStore();
   const { isDarkMode } = useThemeStore();
+  const location = useLocation();
 
   useEffect(() => {
     if (accessToken && !isAuthenticated()) {
@@ -18,13 +19,17 @@ const ProtectedLayout = () => {
     return <Navigate to="/login" replace />;
   }
 
+  // Don't show Navbar for form pages
+  const showNavbar = !location.pathname.includes('/dashboard/new') && 
+                     !location.pathname.includes('/dashboard/edit');
+
   return (
     <div className={`min-h-screen transition-colors duration-300 ${
       isDarkMode
         ? 'bg-[var(--color-gray-800)] text-[var(--color-white)]'
         : 'bg-[var(--color-gray-100)] text-[var(--color-black)]'
     }`}>
-      <Navbar />
+      {showNavbar && <Navbar />}
       <main>
         <Outlet context={{ isDarkMode }} />
       </main>

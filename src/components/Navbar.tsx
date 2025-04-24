@@ -8,11 +8,13 @@ const Navbar = () => {
   const { logout } = useAuthStore();
   const { isDarkMode, toggleTheme } = useThemeStore();
 
-  
-  
   const handleLogout = () => {
     logout();
     navigate('/login', { replace: true });
+  };
+
+  const handleCreateUser = () => {
+    navigate('/dashboard/new');
   };
 
   return (
@@ -22,6 +24,7 @@ const Navbar = () => {
         
         <div className="flex items-center space-x-4">
           <button
+            onClick={handleCreateUser}
             className="bg-white text-[var(--color-primary)] hover:bg-gray-100 px-4 py-2 rounded-md transition"
             aria-label="Create new user"
           >
