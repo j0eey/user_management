@@ -4,7 +4,6 @@ import { NewUserForm } from '../components/auth/NewUserForm';
 import useCreateUser from '../hooks/useCreateUser';
 import { toast } from 'react-hot-toast';
 import { UserFormData } from '../lib/validation';
-import { User } from '../types/user';
 
 export default function NewUserPage() {
   const navigate = useNavigate();
@@ -13,25 +12,18 @@ export default function NewUserPage() {
   const handleSubmit = async (data: UserFormData) => {
     try {
       await toast.promise(
-  mutateAsync(data), 
-  {
-    loading: 'Creating user...',
-    success: (user: User) => {
-      navigate('/dashboard', {
-        state: {
-          newUserCreated: true,
-          newUser: user
+        mutateAsync(data),
+        {
+          loading: 'Creating user...',
+          success: () => {
+            navigate('/dashboard');
+            return 'User created successfully!';
+          },
+          error: (err: Error) => err.message || 'Error creating user'
         }
-      });
-      return '';  // Return an empty string to show success toast message
-    },
-    error: (err: Error) => err.message || 'Error creating user'
-  },
-  { position: 'top-center' }
-);
-
+      );
     } catch (error) {
-      // Error handling
+      // Error handling is done by toast.promise
     }
   };
 
@@ -39,7 +31,7 @@ export default function NewUserPage() {
     <div>
       <MinimalNavbar />
       <div className="flex justify-center items-center min-h-[calc(100vh-64px)] p-4">
-        <NewUserForm 
+      <NewUserForm 
           onSubmit={handleSubmit}
           isSubmitting={isPending}
         />

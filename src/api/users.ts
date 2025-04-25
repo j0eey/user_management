@@ -11,6 +11,8 @@ type ApiResponse<T> = {
   message?: string;
 };
 
+
+
 type UserStatus = 'ACTIVE' | 'LOCKED';
 
 const normalizeResponse = <T>(response: ApiResponse<T>): { data: T; message: string } => ({
@@ -95,28 +97,28 @@ export const createUser = async (
   userData: UserFormData,
   accessToken: string | null
 ): Promise<User> => {  
-  const response = await fetchApi<{ 
-    status: number;
-    result: {
-      data: {
-        user: User
-      },
-      message: string
-    }
-  }>(
-    '/api/users',
-    {
-      method: 'POST',
-      headers: getAuthHeaders(accessToken),
-      body: JSON.stringify({
-        ...userData,
-        status: userData.status.toUpperCase()
-      })
-    },
-    'Failed to create user'
-  );
+  const response = await fetch('/api/users', {
+    method: 'POST',
+    headers: getAuthHeaders(accessToken),
+    body: JSON.stringify({
+      ...userData,
+      status: userData.status.toUpperCase()
+    })
+  });
 
-  return response.result.data.user;
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.message || 'Failed to create user');
+  }
+
+  const responseData = await response.json();
+  const user = responseData.result?.data?.user || responseData.data?.user;
+  
+  if (!user) {
+    throw new Error('Invalid user data received from server');
+  }
+
+  return user;
 };
 
 export const updateUser = async (

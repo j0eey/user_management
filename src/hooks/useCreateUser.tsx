@@ -8,15 +8,15 @@ export default function useCreateUser() {
   const { accessToken } = useAuthStore();
   const queryClient = useQueryClient();
 
-  return useMutation({
-    mutationFn: (data: UserFormData) => {
-      if (!accessToken) throw new Error('Missing access token');
-      return createUser(data, accessToken);  // Now returns User directly
+  return useMutation<User, Error, UserFormData, { previousUsers?: User[] }>({
+    mutationFn: (data) => {
+      if (!accessToken) throw new Error('No authentication token found');
+      return createUser(data, accessToken); 
     },
     onMutate: async (newUserData) => {
       await queryClient.cancelQueries({ queryKey: ['users'] });
       const previousUsers = queryClient.getQueryData<User[]>(['users']) || [];
-
+      
       const optimisticUser: User = {
         ...newUserData,
         id: 'temp-' + crypto.randomUUID(),
@@ -24,27 +24,31 @@ export default function useCreateUser() {
         lastName: newUserData.lastName || undefined
       };
 
+      // 1. Immediate optimistic update
       queryClient.setQueryData(['users'], [...previousUsers, optimisticUser]);
+      
+      // 2. Start parallel background refresh (non-blocking)
+      queryClient.invalidateQueries({ 
+        queryKey: ['users'],
+        refetchType: 'inactive'
+      });
 
-      return { previousUsers, optimisticUser };
+      return { previousUsers };
     },
-    onSuccess: (createdUser, _, context) => {
-      if (context?.previousUsers) {
-        queryClient.setQueryData(['users'], (old: User[] | undefined) => 
-          old?.map(user => 
-            user.id === context.optimisticUser.id ? createdUser : user
-          )
-        );
-      }
+    onSuccess: (createdUser) => {
+      queryClient.setQueryData(['users'], (old: User[] | undefined) => {
+        const cleanList = old?.filter(u => !u.id.startsWith('temp-')) || [];
+        return [...cleanList, { ...createdUser, __version: Date.now() }];
+      });
+      
+      queryClient.setQueryDefaults(['users'], {
+        staleTime: 1000 * 30 
+      });
     },
-    onError: (error, _, context: { previousUsers?: User[] } | undefined) => {
-      console.error('Create User Error:', error);
+    onError: (_error, _variables, context) => {
       if (context?.previousUsers) {
         queryClient.setQueryData(['users'], context.previousUsers);
       }
-    },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ['users'] });
     }
   });
 }
