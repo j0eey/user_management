@@ -1,4 +1,8 @@
 import { User } from '../../types/user';
+import { useNavigate } from 'react-router-dom';
+import { useState } from 'react';
+import { ConfirmModal } from '../../components/ui/ConfirmModal';
+import useDeleteUser from '../../hooks/useDeleteUser';
 
 interface UserCardProps {
   user: User;
@@ -8,6 +12,13 @@ interface UserCardProps {
 
 export const UserCard = ({ user, isDarkMode }: UserCardProps) => {
   const userInitials = `${user.firstName[0]}${user.lastName?.[0] ?? ''}`;
+  const navigate = useNavigate();
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const deleteUser = useDeleteUser();
+
+  const handleDelete = () => {
+    deleteUser.mutate(user.id);
+  };
   
   return (
     <div 
@@ -55,21 +66,35 @@ export const UserCard = ({ user, isDarkMode }: UserCardProps) => {
     
       {/* Buttons */}
       <div className="mt-4 flex justify-end gap-2 w-full">
-        <button className={`px-3 py-1 rounded-md text-sm transition-colors ${
-          isDarkMode 
-            ? 'bg-[var(--color-primary-dark)] hover:bg-[var(--color-primary)] text-[var(--color-white)]'
-            : 'bg-[var(--color-primary)] hover:bg-[var(--color-primary-dark)] text-[var(--color-white)]'
-        }`}>
+      <button
+          onClick={() => navigate(`/dashboard/edit/${user.id}`)} // ✅ Navigation here
+          className={`px-3 py-1 rounded-md text-sm transition-colors ${
+            isDarkMode 
+              ? 'bg-[var(--color-primary-dark)] hover:bg-[var(--color-primary)] text-[var(--color-white)]'
+              : 'bg-[var(--color-primary)] hover:bg-[var(--color-primary-dark)] text-[var(--color-white)]'
+          }`}
+        >
           Edit
         </button>
 
-        <button className={`px-3 py-1 rounded-md text-sm transition-colors ${
+        <button 
+        onClick={() => setIsDeleteModalOpen(true)}
+        className={`px-3 py-1 rounded-md text-sm ${
           isDarkMode 
-            ? 'bg-[var(--color-red-600)] hover:bg-[var(--color-red-700)] text-[var(--color-white)]'
-            : 'bg-[var(--color-red-500)] hover:bg-[var(--color-red-600)] text-[var(--color-white)]'
-        }`}>
-          Delete
-        </button>
+            ? 'bg-[var(--color-red-600)] hover:bg-[var(--color-red-700)]'
+            : 'bg-[var(--color-red-500)] hover:bg-[var(--color-red-600)]'
+        } text-white`}
+      >
+        Delete
+      </button>
+
+      <ConfirmModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        onConfirm={handleDelete}
+        title="Confirm Deletion"
+        description={`Are you sure you want to delete ${user.firstName} ${user.lastName || ''}?`}
+      />
       </div>
     </div>
   );

@@ -2,38 +2,31 @@ import { useNavigate } from 'react-router-dom';
 import { MinimalNavbar } from '../components/MinimalNavbar';
 import { NewUserForm } from '../components/auth/NewUserForm';
 import useCreateUser from '../hooks/useCreateUser';
-import { useState } from 'react';
-import { Modal } from '../components/ui/Modal';
+import { toast } from 'react-hot-toast';
+import { UserFormData } from '../lib/validation';
 
 export default function NewUserPage() {
   const navigate = useNavigate();
-  const { mutate, isPending } = useCreateUser();
-  
-  const [modalVisible, setModalVisible] = useState(false);
-  const [modalMessage, setModalMessage] = useState('');
-  const [isError, setIsError] = useState(false);
+  const { mutateAsync, isPending } = useCreateUser();
 
-  const handleSubmit = (data: Parameters<typeof mutate>[0]) => {
-    mutate(data, {
-      onSuccess: () => {
-        setModalMessage('User created successfully!');
-        setIsError(false);
-        setModalVisible(true);
-        setTimeout(() => {
-          setModalVisible(false);
-          navigate('/dashboard');
-        }, 2000);
-      },
-      onError: () => {
-        setModalMessage('Error creating user!');
-        setIsError(true);
-        setModalVisible(true);
-      }
-    });
-  };
-
-  const closeModal = () => {
-    setModalVisible(false);
+  const handleSubmit = async (data: UserFormData) => {
+    try {
+      await toast.promise(
+        mutateAsync(data),
+        {
+          loading: 'Creating user...',
+          success: 'User created successfully!',
+          error: (err: Error) => err.message || 'Error creating user'
+        },
+        {
+          duration: 2000,
+          position: 'top-center'
+        }
+      );
+      navigate('/dashboard');
+    } catch (error) {
+      // Errors handled by toast
+    }
   };
 
   return (
@@ -41,19 +34,10 @@ export default function NewUserPage() {
       <MinimalNavbar />
       <div className="flex justify-center items-center min-h-[calc(100vh-64px)] p-4">
         <NewUserForm 
-          onSubmit={handleSubmit} 
-          isSubmitting={isPending} 
+          onSubmit={handleSubmit}
+          isSubmitting={isPending}
         />
       </div>
-
-      {/* Modal to show success or error */}
-      {modalVisible && (
-        <Modal 
-          message={modalMessage} 
-          isError={isError} 
-          onClose={closeModal} 
-        />
-      )}
     </div>
   );
 }
