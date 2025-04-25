@@ -94,8 +94,16 @@ export const getUserById = async (
 export const createUser = async (
   userData: UserFormData,
   accessToken: string | null
-): Promise<User> => {
-  const data = await fetchApi<{ user: User }>(
+): Promise<User> => {  
+  const response = await fetchApi<{ 
+    status: number;
+    result: {
+      data: {
+        user: User
+      },
+      message: string
+    }
+  }>(
     '/api/users',
     {
       method: 'POST',
@@ -108,7 +116,7 @@ export const createUser = async (
     'Failed to create user'
   );
 
-  return normalizeUser(data.user);
+  return response.result.data.user;
 };
 
 export const updateUser = async (

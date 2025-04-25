@@ -1,11 +1,13 @@
 import { Dialog } from '@headlessui/react';
 
+
 interface ConfirmModalProps {
   isOpen: boolean;
   onClose: () => void;
   onConfirm: () => void;
   title: string;
   description: string;
+  isDarkMode?: boolean;
 }
 
 export function ConfirmModal({
