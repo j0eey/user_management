@@ -18,8 +18,8 @@ export const DashboardForm = ({
         onChange={(e) => onSearchChange(e.target.value)}
         className={`w-full sm:w-1/2 md:w-1/3 p-2 border rounded-md transition ${
           isDarkMode
-            ? 'bg-gray-700 text-white placeholder-gray-300 border-gray-600 focus:ring-2 focus:ring-blue-500'
-            : 'bg-white text-gray-800 placeholder-gray-500 border-gray-300 focus:ring-2 focus:ring-blue-500'
+            ? 'bg-gray-700 !text-white placeholder-gray-300 border-gray-600 focus:ring-2 focus:ring-blue-500'
+            : 'bg-white !text-[#213547] placeholder-gray-500 border-gray-300 focus:ring-2 focus:ring-blue-500'
         }`}
       />
     </div>

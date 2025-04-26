@@ -7,7 +7,7 @@ export const NotFoundPage = () => {
       <p className="text-lg mb-6">The page you're looking for doesn't exist.</p>
       <Link 
         to="/dashboard" 
-        className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition"
+        className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-800 transition"
       >
         Go to Dashboard
       </Link>
