@@ -110,8 +110,8 @@ export function UserForm({
             {...register('status')}
             className="w-full p-3 border border-[var(--color-gray-300)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent"
           >
-            <option value="active">ACTIVE</option>
-            <option value="locked">LOCKED</option>
+            <option value="active">active</option>
+            <option value="locked">locked</option>
           </select>
           {errors.status && (
             <p className="text-[var(--color-red-600)] text-sm mt-1">

@@ -12,18 +12,18 @@ type ApiResponse<T> = {
   message?: string;
 };
 
-
-
-type UserStatus = 'ACTIVE' | 'LOCKED';
+// Remove capital casing from here
+type UserStatus = 'active' | 'locked';
 
 const normalizeResponse = <T>(response: ApiResponse<T>): { data: T; message: string } => ({
   data: response.result?.data || response.data || ({} as T),
   message: response.result?.message || response.message || 'Operation succeeded'
 });
 
+// Remove .toUpperCase() from here
 const normalizeUser = (user: User): User => ({
   ...user,
-  status: user.status.toUpperCase() as UserStatus,
+  status: user.status as UserStatus,
   lastName: user.lastName || undefined
 });
 
@@ -44,7 +44,7 @@ const fetchApi = async <T>(
 ): Promise<T> => {
   try {
     const response = await fetch(endpoint, options);
-    
+
     if (!response.ok) {
       const error = await response.json().catch(() => ({}));
       throw new Error(error.result?.message || error.message || errorMessage);
@@ -97,13 +97,13 @@ export const getUserById = async (
 export const createUser = async (
   userData: UserFormData,
   accessToken: string | null
-): Promise<User> => {  
+): Promise<User> => {
   const response = await fetch('/api/users', {
     method: 'POST',
     headers: getAuthHeaders(accessToken),
     body: JSON.stringify({
       ...userData,
-      status: userData.status.toUpperCase()
+      status: userData.status // Keep status as it is (lowercase)
     })
   });
 
@@ -114,7 +114,7 @@ export const createUser = async (
 
   const responseData = await response.json();
   const user = responseData.result?.data?.user || responseData.data?.user;
-  
+
   if (!user) {
     throw new Error('Invalid user data received from server');
   }
@@ -134,7 +134,7 @@ export const updateUser = async (
       headers: getAuthHeaders(accessToken),
       body: JSON.stringify({
         ...userData,
-        status: userData.status.toUpperCase()
+        status: userData.status // Keep status as it is (lowercase)
       })
     },
     'Failed to update user'

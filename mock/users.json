@@ -59,7 +59,7 @@
             "firstName": "Frank",
             "lastName": "White",
             "email": "frank.white@example.com",
-            "status": "ACTIVE",
+            "status": "active",
             "dateOfBirth": "1994-01-25"
         },
         {

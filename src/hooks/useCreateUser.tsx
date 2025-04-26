@@ -18,7 +18,7 @@ export default function useCreateUser() {
   return useMutation<User, Error, UserFormData, { previousUsers?: User[] }>({
     mutationFn: (data) => {
       if (!accessToken) throw new Error('No authentication token found');
-      return createUser(data, accessToken); 
+      return createUser(data, accessToken);
     },
     onMutate: async (newUserData) => {
       await queryClient.cancelQueries({ queryKey: ['users'] });
@@ -27,14 +27,11 @@ export default function useCreateUser() {
       const optimisticUser: User = {
         ...newUserData,
         id: generateTempId(),
-        status: newUserData.status.toUpperCase() as 'ACTIVE' | 'LOCKED',
+        status: newUserData.status,
         lastName: newUserData.lastName || undefined,
       };
 
-      // Optimistic update
       queryClient.setQueryData(['users'], [...previousUsers, optimisticUser]);
-
-      // Background refetch to refresh data
       queryClient.invalidateQueries({ 
         queryKey: ['users'],
         refetchType: 'inactive'
@@ -49,12 +46,12 @@ export default function useCreateUser() {
       });
       
       queryClient.setQueryDefaults(['users'], {
-        staleTime: 1000 * 30 
+        staleTime: 1000 * 30
       });
     },
     onError: (_error, _variables, context) => {
       if (context?.previousUsers) {
-        queryClient.setQueryData(['users'], context.previousUsers); 
+        queryClient.setQueryData(['users'], context.previousUsers);
       }
     },
     onSettled: () => {

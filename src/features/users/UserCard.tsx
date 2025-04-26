@@ -46,7 +46,7 @@ export const UserCard = ({ user, isDarkMode, debouncedSearchTerm }: UserCardProp
         <div className={`text-sm ${isDarkMode ? 'text-[var(--color-gray-300)]' : 'text-[var(--color-gray-500)]'}`}>
           <span className="font-medium">Status: </span>
           <span className={`${
-            user.status === 'ACTIVE' 
+            user.status === 'active' 
               ? isDarkMode ? 'text-green-400' : 'text-green-600'
               : isDarkMode ? 'text-red-400' : 'text-red-600'
           }`}>

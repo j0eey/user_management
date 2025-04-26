@@ -5,7 +5,7 @@ export interface User {
   firstName: string;
   lastName?: string; 
   email: string;
-  status: 'ACTIVE' | 'LOCKED';
+  status: 'active' | 'locked';
   dateOfBirth: string;
 }
 
@@ -13,7 +13,7 @@ export const userSchema = z.object({
   firstName: z.string().min(1, 'First name is required'),
   lastName: z.string().optional(),
   email: z.string().email('Invalid email'),
-  status: z.enum(['ACTIVE', 'LOCKED']),
+  status: z.enum(['active', 'locked']),
   dateOfBirth: z.string().refine(val => !isNaN(Date.parse(val)), {
     message: 'Invalid date format',
   }),

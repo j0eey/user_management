@@ -1,4 +1,4 @@
-import { useAuthStore } from '../store/authStore'; 
+import { useAuthStore } from '../store/authStore';
 import { UserFormData } from "../lib/validation";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { User } from "../types/user";
@@ -9,7 +9,7 @@ interface UpdateUserVariables {
 }
 
 export default function useUpdateUser() {
-  const { accessToken } = useAuthStore(state => state);
+  const { accessToken } = useAuthStore();
   const queryClient = useQueryClient();
 
   return useMutation<User, Error, UpdateUserVariables, { previousUsers?: User[] }>({
@@ -22,10 +22,7 @@ export default function useUpdateUser() {
           "Content-Type": "application/json",
           "Authorization": `Bearer ${accessToken}`,
         },
-        body: JSON.stringify({
-          ...data,
-          status: data.status.toUpperCase(),
-        }),
+        body: JSON.stringify(data),
       });
 
       const result = await response.json();
@@ -37,9 +34,7 @@ export default function useUpdateUser() {
       const previousUsers = queryClient.getQueryData<User[]>(['users']) || [];
       
       queryClient.setQueryData(['users'], previousUsers.map(user => 
-        user.id === id 
-          ? { ...user, ...data, status: data.status.toUpperCase() as 'ACTIVE' | 'LOCKED' }
-          : user
+        user.id === id ? { ...user, ...data } : user
       ));
       
       return { previousUsers };
