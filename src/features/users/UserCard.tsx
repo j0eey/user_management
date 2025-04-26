@@ -7,22 +7,22 @@ import useDeleteUser from '../../hooks/useDeleteUser';
 interface UserCardProps {
   user: User;
   isDarkMode: boolean;
-  onRender?: () => void;
+  debouncedSearchTerm: string;
   id?: string;
 }
 
-export const UserCard = ({ user, isDarkMode }: UserCardProps) => {
+export const UserCard = ({ user, isDarkMode, debouncedSearchTerm }: UserCardProps) => {
   const userInitials = `${user.firstName[0]}${user.lastName?.[0] ?? ''}`;
   const navigate = useNavigate();
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const deleteUser = useDeleteUser();
+  const deleteUser = useDeleteUser(debouncedSearchTerm); 
 
   const handleDelete = () => {
     deleteUser.mutate(user.id);
   };
 
   return (
-    <div 
+    <div
       className={`p-4 rounded-md shadow-md flex flex-col items-center transition-colors duration-200 focus:outline-none focus:ring-0 ${
         isDarkMode 
           ? 'bg-[var(--color-gray-700)] hover:bg-[var(--color-gray-600)]' 
@@ -30,12 +30,10 @@ export const UserCard = ({ user, isDarkMode }: UserCardProps) => {
       }`}
       tabIndex={-1}
     >
-      {/* Centered User Initial */}
       <div className="w-12 h-12 bg-[var(--color-primary)] text-[var(--color-white)] flex items-center justify-center rounded-full text-lg font-semibold mb-3">
         {userInitials}
       </div>
 
-      {/* User Info */}
       <div className="w-full text-left mt-2 space-y-1">
         <h2 className="text-lg font-semibold">
           {user.firstName} {user.lastName ?? ''}
@@ -49,12 +47,8 @@ export const UserCard = ({ user, isDarkMode }: UserCardProps) => {
           <span className="font-medium">Status: </span>
           <span className={`${
             user.status === 'ACTIVE' 
-              ? isDarkMode 
-                ? 'text-green-400' 
-                : 'text-green-600'
-              : isDarkMode 
-                ? 'text-red-400' 
-                : 'text-red-600'
+              ? isDarkMode ? 'text-green-400' : 'text-green-600'
+              : isDarkMode ? 'text-red-400' : 'text-red-600'
           }`}>
             {user.status}
           </span>
@@ -66,7 +60,6 @@ export const UserCard = ({ user, isDarkMode }: UserCardProps) => {
         </div>
       </div>
 
-      {/* Buttons */}
       <div className="mt-4 flex justify-end gap-2 w-full">
         <button
           onClick={() => navigate(`/dashboard/edit/${user.id}`)}

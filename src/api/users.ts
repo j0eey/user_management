@@ -1,5 +1,6 @@
 import { User } from '../types/user';
 import { UserFormData } from '../lib/validation';
+import { useAuthStore } from '../store/authStore';
 
 type ApiResponse<T> = {
   status: number;
@@ -142,15 +143,14 @@ export const updateUser = async (
   return normalizeUser(data.user);
 };
 
-export const deleteUser = async (
-  id: string,
-  accessToken: string | null
-): Promise<void> => {
+export const deleteUserById = async (id: string): Promise<void> => {
+  const { accessToken } = useAuthStore.getState();
+
   await fetchApi<void>(
     `/api/users/${id}`,
     {
       method: 'DELETE',
-      headers: getAuthHeaders(accessToken)
+      headers: getAuthHeaders(accessToken),
     },
     'Failed to delete user'
   );

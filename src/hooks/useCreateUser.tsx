@@ -16,18 +16,18 @@ export default function useCreateUser() {
     onMutate: async (newUserData) => {
       await queryClient.cancelQueries({ queryKey: ['users'] });
       const previousUsers = queryClient.getQueryData<User[]>(['users']) || [];
-      
+
       const optimisticUser: User = {
         ...newUserData,
         id: 'temp-' + crypto.randomUUID(),
         status: newUserData.status.toUpperCase() as 'ACTIVE' | 'LOCKED',
-        lastName: newUserData.lastName || undefined
+        lastName: newUserData.lastName || undefined,  // Ensure it's either undefined or a valid string
       };
 
-      // 1. Immediate optimistic update
+      // Optimistic update
       queryClient.setQueryData(['users'], [...previousUsers, optimisticUser]);
-      
-      // 2. Start parallel background refresh (non-blocking)
+
+      // Background refetch to refresh data (non-blocking)
       queryClient.invalidateQueries({ 
         queryKey: ['users'],
         refetchType: 'inactive'
@@ -47,8 +47,12 @@ export default function useCreateUser() {
     },
     onError: (_error, _variables, context) => {
       if (context?.previousUsers) {
-        queryClient.setQueryData(['users'], context.previousUsers);
+        queryClient.setQueryData(['users'], context.previousUsers); 
       }
+    },
+    onSettled: () => {
+
+      queryClient.invalidateQueries({ queryKey: ['users'] });
     }
   });
 }

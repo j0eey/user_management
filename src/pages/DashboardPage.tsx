@@ -6,7 +6,6 @@ import { UserCard } from '../features/users/UserCard';
 import { DashboardForm } from '../components/auth/DashboardForm';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
 import { useAuthStore } from '../store/authStore';
-import { toast } from 'react-hot-toast';
 
 export const DashboardPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -16,25 +15,13 @@ export const DashboardPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
-  // Handle success toast for newly created users
+
   useEffect(() => {
     if (location.state?.newUserCreated) {
       const newUser = location.state.newUser;
-      toast.success(
-        `User ${newUser.firstName} ${newUser.lastName || ''} created successfully!`,
-        { 
-          position: 'top-center',
-          duration: 3000,
-          style: {
-            background: isDarkMode ? '#1f2937' : '',
-            color: isDarkMode ? 'white' : ''
-          }
-        }
-      );
-      // Clear the state to prevent showing on refresh
+    
       navigate('.', { state: {}, replace: true });
-      
-      // Scroll to the new user if they're in the current view
+    
       setTimeout(() => {
         const newUserElement = document.getElementById(`user-${newUser.id}`);
         if (newUserElement) {
@@ -46,6 +33,7 @@ export const DashboardPage = () => {
         }
       }, 500);
     }
+    
   }, [location.state, isDarkMode, navigate]);
 
   // Debounce search term
@@ -127,12 +115,14 @@ export const DashboardPage = () => {
           {filteredUsers.length > 0 ? (
             filteredUsers.map((user) => (
               <UserCard 
-                key={user.id} 
-                user={user} 
+                key={user.id}
+                user={user}
                 isDarkMode={isDarkMode}
-                id={`user-${user.id}`} 
+                debouncedSearchTerm={debouncedSearchTerm} 
+                id={`user-${user.id}`}
               />
             ))
+            
           ) : (
             <div className="col-span-full text-center py-8">
               No users found

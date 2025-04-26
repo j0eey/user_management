@@ -1,48 +1,51 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { useAuthStore } from '../store/authStore';
-import { deleteUser } from '../api/users';
+import { deleteUserById } from '../api/users';
 import { toast } from 'react-hot-toast';
 import { User } from '../types/user';
 
-export default function useDeleteUser() {
-  const { accessToken } = useAuthStore();
+const USERS_QUERY_KEY = 'users';
+
+const useDeleteUser = (debouncedSearchTerm: string) => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (id: string) => {
-      if (!accessToken) throw new Error('Missing access token');
-
-      return toast.promise(
-        deleteUser(id, accessToken),
+    mutationFn: (userId: string) =>
+      toast.promise(
+        deleteUserById(userId),
         {
           loading: 'Deleting user...',
           success: 'User deleted successfully!',
-          error: (err: Error) => err.message || 'Failed to delete user'
+          error: (err: Error) => err.message || 'Failed to delete user',
         },
         {
           duration: 2000,
-          position: 'top-center'
+          position: 'top-center',
         }
-      );
-    },
-    onMutate: async (id: string) => {
-      await queryClient.cancelQueries({ queryKey: ['users'] });
+      ),
 
-      const previousUsers = queryClient.getQueryData<User[]>(['users']) || [];
+    onMutate: async (userId: string) => {
+      await queryClient.cancelQueries({ queryKey: [USERS_QUERY_KEY, debouncedSearchTerm] });
 
-      queryClient.setQueryData(['users'],
-        previousUsers.filter((user) => user.id !== id)
+      const previousUsers = queryClient.getQueryData<User[]>([USERS_QUERY_KEY, debouncedSearchTerm]);
+
+      queryClient.setQueryData<User[]>(
+        [USERS_QUERY_KEY, debouncedSearchTerm],
+        (old) => old?.filter((user) => user.id !== userId) ?? []
       );
 
       return { previousUsers };
     },
-    onError: (_error, _id, context: { previousUsers?: User[] } | undefined) => {
+
+    onError: (_err, _userId, context) => {
       if (context?.previousUsers) {
-        queryClient.setQueryData(['users'], context.previousUsers);
+        queryClient.setQueryData([USERS_QUERY_KEY, debouncedSearchTerm], context.previousUsers);
       }
     },
+
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ['users'] });
+      queryClient.invalidateQueries({ queryKey: [USERS_QUERY_KEY, debouncedSearchTerm] });
     },
   });
-}
+};
+
+export default useDeleteUser;
