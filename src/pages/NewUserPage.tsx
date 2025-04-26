@@ -12,11 +12,12 @@ export default function NewUserPage() {
   const handleSubmit = async (data: UserFormData) => {
     try {
       await toast.promise(
-        mutateAsync(data), // This will trigger the createUser mutation
+        mutateAsync(data), 
         {
           loading: 'Creating user...',
           success: () => {
             navigate('/dashboard'); // Redirect after successful user creation
+            // window.location.reload();
             return 'User created successfully!';
           },
           error: (err: Error) => err.message || 'Error creating user',

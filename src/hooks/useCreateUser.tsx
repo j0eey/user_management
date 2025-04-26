@@ -4,6 +4,16 @@ import { UserFormData } from "../lib/validation";
 import { User } from "../types/user";
 import { createUser } from "../api/users";
 
+// Helper function to generate temporary IDs
+function generateTempId() {
+  // Use crypto.randomUUID if available (modern browsers)
+  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+    return 'temp-' + crypto.randomUUID();
+  }
+  // Fallback for Node.js or older browsers
+  return 'temp-' + Math.random().toString(36).substring(2, 11);
+}
+
 export default function useCreateUser() {
   const { accessToken } = useAuthStore();
   const queryClient = useQueryClient();
@@ -19,9 +29,9 @@ export default function useCreateUser() {
 
       const optimisticUser: User = {
         ...newUserData,
-        id: 'temp-' + crypto.randomUUID(),
+        id: generateTempId(), // Using the safe ID generator
         status: newUserData.status.toUpperCase() as 'ACTIVE' | 'LOCKED',
-        lastName: newUserData.lastName || undefined,  // Ensure it's either undefined or a valid string
+        lastName: newUserData.lastName || undefined,
       };
 
       // Optimistic update
@@ -51,7 +61,6 @@ export default function useCreateUser() {
       }
     },
     onSettled: () => {
-
       queryClient.invalidateQueries({ queryKey: ['users'] });
     }
   });

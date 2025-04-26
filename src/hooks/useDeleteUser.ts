@@ -18,7 +18,7 @@ const useDeleteUser = (debouncedSearchTerm: string) => {
           error: (err: Error) => err.message || 'Failed to delete user',
         },
         {
-          duration: 2000,
+          duration: 600,
           position: 'top-center',
         }
       ),
