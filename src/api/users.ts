@@ -12,7 +12,6 @@ type ApiResponse<T> = {
   message?: string;
 };
 
-// Remove capital casing from here
 type UserStatus = 'active' | 'locked';
 
 const normalizeResponse = <T>(response: ApiResponse<T>): { data: T; message: string } => ({
@@ -20,7 +19,6 @@ const normalizeResponse = <T>(response: ApiResponse<T>): { data: T; message: str
   message: response.result?.message || response.message || 'Operation succeeded'
 });
 
-// Remove .toUpperCase() from here
 const normalizeUser = (user: User): User => ({
   ...user,
   status: user.status as UserStatus,
@@ -103,7 +101,7 @@ export const createUser = async (
     headers: getAuthHeaders(accessToken),
     body: JSON.stringify({
       ...userData,
-      status: userData.status // Keep status as it is (lowercase)
+      status: userData.status
     })
   });
 
